@@ -4,11 +4,11 @@ This directory contains the code that we used in "Detecting Gang-Involved Escala
 We include here our code for (1) our Convolutional Neural Net system, (2) our process for constructing context features from word embedings. Feel free to email the authors for any related questions.
 
 ## Author Contacts
-Serina Chang, sc3003@columbia.edu
-Ruiqi Zhong, rz2383@columbia.edu
-Ethan Adams, ea2678@columbia.edu
-Fei-Tzin Lee, fl2301@columbia.edu
-Siddharth Varia, sv2504@columbia.edu
+Serina Chang, sc3003@columbia.edu  
+Ruiqi Zhong, rz2383@columbia.edu  
+Ethan Adams, ea2678@columbia.edu  
+Fei-Tzin Lee, fl2301@columbia.edu  
+Siddharth Varia, sv2504@columbia.edu  
 Kathy McKeown, kathy@cs.columbia.edu
 
 ## CNN Architecture
