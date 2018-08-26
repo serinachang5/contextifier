@@ -21,7 +21,7 @@ class Contextifier:
     RETWEET = 'RETWEET'         # User A's tweet is retweted
     MENTION = 'MENTION'         # User A is mentioned in User B's tweet
     RETWEET_MENTION = 'RETWEET_MENTION'     # User C retweets user B's tweet,
-                                                # in which user was mentioned.
+                                                # in which user A was mentioned.
     POST_TYPES = [SELF, RETWEET, MENTION, RETWEET_MENTION]
     
     
@@ -46,7 +46,6 @@ class Contextifier:
 
         '''
         # Save variables
-        print('Initializing Contextifier...')
         self.tweet_level = tweet_level
         self.set_post_types(post_types)
         self.set_context_size(context_size)
@@ -54,11 +53,12 @@ class Contextifier:
         self.set_context_combine(context_combine)
         self.set_tl_combine(tl_combine)
 
-        self.tweet_to_ct = {} # To allow for loading from files
+        # To allow for loading from files
+        self.tweet_to_ct = {}
 
-        # storage for quick access, provided settings stay the same - good for cross-val
-        # these are not static contexts like those from files, so cache needs be emptied
-        # every time settings are changed
+        # Storage for quick access, provided settings stay the same - good for cross-val
+        # These are not static contexts like those from files, so cache needs be emptied
+        #     every time settings are changed
         self.cache = {}
 
 
@@ -106,13 +106,13 @@ class Contextifier:
     def assemble_context(self, all_data):
         '''
         Sorts the tweets into self.user_ct_tweets, based on the variables
-            self.use_rt_user, self.use_rt_mentions, and self.use_mentions
+            self.use_rt_user, self.use_rt_mentions, and self.use_mentions.
         Args:
             all_data (list): result of Data_loader.all_data(). All the tweets in the corpus.
         Returns:
             user_ct_tweets (dict (str -> list((int, str))): map from user_id to
                 list of (tweet, type) where tweet is the tweet and type is one
-                of self.SELF, self.RETWEET, self.MENTION, self.RETWEET_MENTION
+                of self.SELF, self.RETWEET, self.MENTION, self.RETWEET_MENTION.
             id_to_location (int -> (str, int)): map from tweet id to
                 (username, index in user_ct_tweets).
         '''
@@ -177,7 +177,7 @@ class Contextifier:
         '''
         Get the tweet embedding for the given tweet.
         Args:
-            tweet_id (int): the id of the tweet, according to twitter's ID system
+            tweet_id (int): the id of the tweet, according to twitter's ID system.
             mode (str): the mode of combining embeddings at the tweet level.
                 See TweetLevel.get_representation()
         Returns:
@@ -230,14 +230,14 @@ class Contextifier:
         return result
     
     
-    def _create_context_embedding(self, user_id, tweet_idx, keep_stats):
+    def _create_context_embedding(self, user_id, tweet_idx):
         '''
         Get the context embedding for the given tweet, determined by user and index.
         Args:
             user_id (int): the id of the user, according to data_loader's user ids
             tweet_idx (int): the index of the tweet in self.user_ct_tweets[user_id]
         Returns:
-            the context embeddings
+            (list (np.array(int))): the context embeddings
             (list (int)): the ids of tweets in the context window
         '''
         
@@ -246,7 +246,6 @@ class Contextifier:
             return (d1 - d2).total_seconds() / 60 / 60 / 24
         
         embs = [] # embeddings
-        tweet_ids = [] # for stats
         context_hl = self.context_size * self.context_hl_ratio # set half life
         
         today = self.user_ct_tweets[user_id][tweet_idx][0]['created_at']
@@ -261,11 +260,12 @@ class Contextifier:
                 continue 
             
             # Save tweet ids
-            if keep_stats:
+            if keep_ids:
                 tweet_ids.append(self.user_ct_tweets[user_id][i][0]['tweet_id'])
 
             # Get embedding
-            emb = self.get_tweet_embedding(self.user_ct_tweets[user_id][i][0]['tweet_id'], self.tl_combine)
+            emb = self.get_tweet_embedding(self.user_ct_tweets[user_id][i][0]['tweet_id'],
+                                           self.tl_combine)
 
             # Weigh embedding
             if context_hl not in [0, 1]:
@@ -287,23 +287,20 @@ class Contextifier:
         return result, tweet_ids
 
 
-    def get_context_embedding(self, tweet_id, keep_stats=False):
+    def get_context_embedding(self, tweet_id):
         '''
         Get the context embedding for the specified tweet, determined by tweet_id
         Args:
-            tweet_id (int): the id of the tweet, according to the twitter tweet ids
-             keep_stats (bool): if true, return how many tweets were in the
-                context window
+            tweet_id (int): the id of the tweet, according to the twitter tweet ids.
         Returns:
-            (np.array(int)): the context embedding 
+            (np.array(int)): the context embedding
         '''
         if tweet_id in self.tweet_to_ct: # Allows for reading in from files
             return self.tweet_to_ct[tweet_id]
         if tweet_id in self.cache:
             return self.cache[tweet_id]
         context_embedding = self._create_context_embedding(self.id_to_location[tweet_id][0],
-                                            self.id_to_location[tweet_id][1],
-                                            keep_stats)
+                                                           self.id_to_location[tweet_id][1])
         self.cache[tweet_id] = context_embedding
         return context_embedding
     
@@ -319,7 +316,8 @@ class Contextifier:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 self.tweet_to_ct[int(row['tweet_id'])] = np.fromstring(row['context_embedding'],
-                                                                    dtype=float, sep=' ')
+                                                                       dtype=float,
+                                                                       sep=' ')
         
 
     def write_context_embeddings(self, dl, out_file=None):
@@ -352,16 +350,24 @@ if __name__ == '__main__':
 
     # Tester/usage
     tweet_level = TweetLevel('../data/splex_minmax_svd_word_s300_seeds_hc.pkl')
-    post_types = [Contextifier.SELF, Contextifier.RETWEET, Contextifier.MENTION,
-                    Contextifier.RETWEET_MENTION]
+    post_types = [Contextifier.SELF,
+                  Contextifier.RETWEET,
+                  Contextifier.MENTION,
+                  Contextifier.RETWEET_MENTION]
     context_size = 2
     context_hl_ratio = 0.5
     context_combine = 'avg'
     tl_combine = 'sum'
     
-    contextifier = Contextifier(tweet_level, post_types, context_size,
-                                context_hl_ratio, context_combine, tl_combine)
+    print('Initializing Contextifier...')
+    contextifier = Contextifier(tweet_level,
+                                post_types,
+                                context_size,
+                                context_hl_ratio,
+                                context_combine,
+                                tl_combine)
 
+    print('Loading Data...')
     option = 'word'
     max_len = 53
     vocab_size = 30000

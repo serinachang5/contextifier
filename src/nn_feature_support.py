@@ -42,7 +42,7 @@ class ContextWrapper():
         reps = []
         for mode in modes:
             self.cl.set_context_combine(mode)
-            reps.append(self.cl.get_context_embedding(tid, keep_stats=False)[0])
+            reps.append(self.cl.get_context_embedding(tid)[0])
         return np.concatenate(reps)
 
     def get_params(self):

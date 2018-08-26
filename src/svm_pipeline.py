@@ -176,9 +176,9 @@ def transform_data(data, models, tid2np, fitted):
             splex_tl_rep = models['splex_tl'].get_representation(tid, args['splex_tl_mode'])
             reps['splex_tl'].append(splex_tl_rep)
         if 'w2v_cl' in reps:
-            reps['w2v_cl'].append(models['w2v_cl'].get_context_embedding(tid, keep_stats=False)[0])  # ignore ct_tweets
+            reps['w2v_cl'].append(models['w2v_cl'].get_context_embedding(tid)[0])  # ignore ct_tweets
         if 'splex_cl' in reps:
-            reps['splex_cl'].append(models['splex_cl'].get_context_embedding(tid, keep_stats=False)[0])
+            reps['splex_cl'].append(models['splex_cl'].get_context_embedding(tid)[0])
         for i in range(len(tid2np)):
             reps['add'+str(i+1)].append(tid2np[i][tid])
 
